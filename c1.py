@@ -4,7 +4,14 @@ import transformers
 import pytorch_lightning
 import os
 import torchvision
+from transformers import DetrFeatureExtractor, DetrForObjectDetection
 
+feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
+model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50")
+
+from transformers import DetrImageProcessor
+
+image_processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
 dataset = '../train_data/images'
 
 ANNOTATION_FILE_NAME = "annotations.json"
@@ -49,7 +56,7 @@ print("Number of test examples:", len(TEST_DATASET))
 import random
 import cv2
 import numpy as np
-
+import supervision as sv
 
 # select random image
 image_ids = TRAIN_DATASET.coco.getImgIds()
@@ -108,7 +115,18 @@ TEST_DATALOADER = DataLoader(dataset=TEST_DATASET, collate_fn=collate_fn, batch_
 import pytorch_lightning as pl
 from transformers import DetrForObjectDetection
 import torch
+from transformers import DetrForObjectDetection, DetrImageProcessor
 
+
+# settings
+DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+CHECKPOINT = 'facebook/detr-resnet-50'
+CONFIDENCE_TRESHOLD = 0.5
+IOU_TRESHOLD = 0.8
+
+image_processor = DetrImageProcessor.from_pretrained(CHECKPOINT)
+model = DetrForObjectDetection.from_pretrained(CHECKPOINT)
+model.to(DEVICE)
 
 class Detr(pl.LightningModule):
 
